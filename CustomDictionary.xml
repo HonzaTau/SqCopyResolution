@@ -1,0 +1,25 @@
+<Dictionary>
+  <Words>
+    <Unrecognized>
+      <Word></Word>
+    </Unrecognized>
+    <Recognized>
+      <Word>Sq</Word>
+      <Word>Qube</Word>
+      <Word>SonarQube</Word>
+      <Word>projectKey</Word>
+    </Recognized>
+    <Deprecated>
+      <Term PreferredAlternate=""></Term>
+    </Deprecated>
+    <DiscreteExceptions>
+      <Term>SonarQube</Term>
+      <Term>projectKey</Term>
+    </DiscreteExceptions>
+  </Words>
+  <Acronyms>
+    <CasingExceptions>
+      <Acronym></Acronym>
+    </CasingExceptions>
+  </Acronyms>
+</Dictionary>
