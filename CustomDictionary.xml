@@ -4,10 +4,11 @@
       <Word></Word>
     </Unrecognized>
     <Recognized>
-      <Word>Sq</Word>
+      <Word>Api</Word>
+      <Word>projectKey</Word>
       <Word>Qube</Word>
       <Word>SonarQube</Word>
-      <Word>projectKey</Word>
+      <Word>Sq</Word>
     </Recognized>
     <Deprecated>
       <Term PreferredAlternate=""></Term>

@@ -22,10 +22,11 @@ namespace SqCopyResolutionr
             var username = ConfigurationManager.AppSettings["SQ_Username"];
             var password = ConfigurationManager.AppSettings["SQ_Password"];
             var sourceProjectKey = ConfigurationManager.AppSettings["SQ_SourceProjectKey"];
+            var destinationProjectKeys = ConfigurationManager.AppSettings["SQ_DestinationProjectKeys"];
             var resolutions = ConfigurationManager.AppSettings["SQ_Resolutions"];
 
             var argsIndex = 0;
-            while (argsIndex <= args.Length)
+            while (argsIndex < args.Length)
             {
                 switch (args[argsIndex].ToUpperInvariant())
                 {
@@ -45,6 +46,10 @@ namespace SqCopyResolutionr
                         sourceProjectKey = args[argsIndex + 1].Trim();
                         argsIndex += 2;
                         break;
+                    case "-DESTINATIONPROJECTKEYS":
+                        destinationProjectKeys = args[argsIndex + 1].Trim();
+                        argsIndex += 2;
+                        break;
                     case "-RESOLUTIONS":
                         resolutions = args[argsIndex + 1].Trim();
                         argsIndex += 2;
@@ -58,6 +63,7 @@ namespace SqCopyResolutionr
 
             var sqProxy = new SonarQubeProxy(logger, sonarQubeUrl, username, password);
             var sourceIssues = sqProxy.GetIssues(sourceProjectKey, resolutions);
+
             Console.ReadLine();
         }
 
