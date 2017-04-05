@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace SqCopyResolution.Services
 {
@@ -24,60 +25,66 @@ namespace SqCopyResolution.Services
             Password = password;
         }
 
-        public Dictionary<Component, List<Issue>> GetIssues(string projectKey, string resolutions)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "I need to call Find method on the returned List, so I cannot use IList here.")]
+        public List<Issue> GetIssuesForProject(string projectKey)
         {
-            var result = new Dictionary<Component, List<Issue>>();
+            var result = new List<Issue>();
 
-            var components = GetProjectComponents(projectKey, resolutions);
+            var components = GetProjectComponents(projectKey);
             if (components != null)
             {
-                const int pageSize = 500;
                 foreach (var component in components)
                 {
-                    result.Add(component, new List<Issue>());
-
-                    Logger.LogInformation("Getting list of issues for component {0}", component.Path);
-
-                    var pageIndex = 1;
-                    do
-                    {
-                        var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                            "{0}/api/issues/search?projectKeys={1}&resolutions={2}&componentKeys={3}&p={4}&ps={5}",
-                            SonarQubeUrl,
-                            projectKey,
-                            resolutions,
-                            component.Key,
-                            pageIndex,
-                            pageSize));
-
-                        var responseContent = GetFromServer(uri);
-                        if (!string.IsNullOrEmpty(responseContent))
-                        {
-                            ApiIssuesSearchResult apiResult = JsonConvert.DeserializeObject<ApiIssuesSearchResult>(responseContent);
-                            result[component].AddRange(apiResult.Issues);
-                            if (apiResult.Paging.Total < (apiResult.Paging.PageIndex * apiResult.Paging.PageSize))
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
-
-                        pageIndex++;
-                    } while (true);
-
-                    Logger.LogInformation("\t{0} issues found", result[component].Count);
+                    result.AddRange(GetIssuesForComponent(component));
                 }
             }
 
             return result;
         }
 
-        private IList<Component> GetProjectComponents(string projectKey, string resolutions)
+        private IList<Issue> GetIssuesForComponent(Component component)
         {
-            Logger.LogInformation("Getting list of components with issues from SonarQube...");
+            Logger.LogInformation("Getting list of issues for component {0}", component.Key);
+
+            var result = new List<Issue>();
+
+            const int pageSize = 500;
+            var pageIndex = 1;
+            do
+            {
+                var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
+                    "{0}/api/issues/search?componentKeys={1}&p={2}&ps={3}",
+                    SonarQubeUrl,
+                    component.Key,
+                    pageIndex,
+                    pageSize));
+
+                var responseContent = GetFromServer(uri);
+                if (!string.IsNullOrEmpty(responseContent))
+                {
+                    ApiIssuesSearchResult apiResult = JsonConvert.DeserializeObject<ApiIssuesSearchResult>(responseContent);
+                    result.AddRange(apiResult.Issues);
+                    if (apiResult.Paging.Total < (apiResult.Paging.PageIndex * apiResult.Paging.PageSize))
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+
+                pageIndex++;
+            } while (true);
+
+            Logger.LogInformation("\t{0} issues found", result.Count);
+
+            return result;
+        }
+
+        private IList<Component> GetProjectComponents(string projectKey)
+        {
+            Logger.LogInformation("Getting list of components for project {0}", projectKey);
 
             var components = new List<Component>();
 

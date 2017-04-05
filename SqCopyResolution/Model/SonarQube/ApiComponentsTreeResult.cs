@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SqCopyResolution.Model.SonarQube
+﻿namespace SqCopyResolution.Model.SonarQube
 {
     public class ApiComponentsTreeResult
     {
         public Paging Paging { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "This is used just for passing objects from server")]
         public Component[] Components { get; set; }
     }
 }

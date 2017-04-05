@@ -23,7 +23,6 @@ namespace SqCopyResolutionr
             var password = ConfigurationManager.AppSettings["SQ_Password"];
             var sourceProjectKey = ConfigurationManager.AppSettings["SQ_SourceProjectKey"];
             var destinationProjectKeys = ConfigurationManager.AppSettings["SQ_DestinationProjectKeys"];
-            var resolutions = ConfigurationManager.AppSettings["SQ_Resolutions"];
 
             var argsIndex = 0;
             while (argsIndex < args.Length)
@@ -50,10 +49,6 @@ namespace SqCopyResolutionr
                         destinationProjectKeys = args[argsIndex + 1].Trim();
                         argsIndex += 2;
                         break;
-                    case "-RESOLUTIONS":
-                        resolutions = args[argsIndex + 1].Trim();
-                        argsIndex += 2;
-                        break;
                     default:
                         WriteHelp(args[argsIndex]);
                         argsIndex += 2;
@@ -62,7 +57,49 @@ namespace SqCopyResolutionr
             }
 
             var sqProxy = new SonarQubeProxy(logger, sonarQubeUrl, username, password);
-            var sourceIssues = sqProxy.GetIssues(sourceProjectKey, resolutions);
+            var sourceIssues = sqProxy.GetIssuesForProject(sourceProjectKey);
+
+            var destinationProjectKeysArray = destinationProjectKeys.Split(',');
+            foreach (var destinationProjectKey in destinationProjectKeysArray)
+            {
+                var destinationIssues = sqProxy.GetIssuesForProject(destinationProjectKey);
+                foreach (var sourceIssue in sourceIssues)
+                {
+                    if (string.CompareOrdinal(sourceIssue.Resolution, "REMOVED") != 0)
+                    {
+                        var destinationIssue = destinationIssues.Find((i) =>
+                            i.Message == sourceIssue.Message
+                            && i.Rule == sourceIssue.Rule
+                            && i.ComponentPath == sourceIssue.ComponentPath
+                            && i.StartLine == sourceIssue.StartLine
+                            && i.StartOffset == sourceIssue.StartOffset);
+
+                        if (destinationIssue == null)
+                        {
+                            logger.LogInformation("Issue {0} was not found in destination project.",
+                                sourceIssue);
+                        }
+                        else if (destinationIssue.Resolution == sourceIssue.Resolution)
+                        {
+                            logger.LogInformation("Issue {0} has the same resolution ({1}) in both projects.",
+                                sourceIssue,
+                                sourceIssue.Resolution);
+                        }
+                        else if (destinationIssue.Resolution == sourceIssue.Resolution)
+                        {
+                            logger.LogInformation("Issue {0} has the same resolution ({1}) in both projects.",
+                                sourceIssue,
+                                sourceIssue.Resolution);
+                        }
+                        else if (!string.IsNullOrEmpty(sourceIssue.Resolution))
+                        {
+                            logger.LogInformation("Issue {0} is not resolved in destination project - updating issue resolution to {1}",
+                                sourceIssue,
+                                sourceIssue.Resolution);
+                        }
+                    }
+                }
+            }
 
             Console.ReadLine();
         }
