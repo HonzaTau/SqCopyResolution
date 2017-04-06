@@ -11,6 +11,7 @@ namespace SqCopyResolution.Model.SonarQube
         public string Resolution { get; set; }
         public string Message { get; set; }
         public TextRange TextRange { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "This is used just for passing objects from server")]
         public Comment[] Comments { get; set; }
 
         public string ComponentPath

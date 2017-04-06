@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\ConfigurationParameters.cs" />
     <Compile Include="Model\SonarQube\ApiComponentsTreeResult.cs" />
     <Compile Include="Model\SonarQube\ApiIssuesSearchResult.cs" />
     <Compile Include="Model\SonarQube\Comment.cs" />

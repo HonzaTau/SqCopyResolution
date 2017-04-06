@@ -174,15 +174,18 @@ namespace SqCopyResolution.Services
                         new KeyValuePair<string, string>("transition", transition)
                     });
 
-            foreach (var comment in comments)
+            if (comments != null)
             {
-                uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                    "{0}/api/issues/add_comment",
-                    SonarQubeUrl));
-                PostToServer(uri, new[] {
+                foreach (var comment in comments)
+                {
+                    uri = new Uri(string.Format(CultureInfo.InvariantCulture,
+                        "{0}/api/issues/add_comment",
+                        SonarQubeUrl));
+                    PostToServer(uri, new[] {
                         new KeyValuePair<string, string>("issue", issueKey),
                         new KeyValuePair<string, string>("text", comment.HtmlText)
                     });
+                }
             }
         }
 
