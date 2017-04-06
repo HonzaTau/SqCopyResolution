@@ -11,6 +11,7 @@ namespace SqCopyResolution.Model.SonarQube
         public string Resolution { get; set; }
         public string Message { get; set; }
         public TextRange TextRange { get; set; }
+        public Comment[] Comments { get; set; }
 
         public string ComponentPath
         {

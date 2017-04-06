@@ -2,6 +2,7 @@
 using SqCopyResolution.Model.SonarQube;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Net.Http;
 using System.Text;
@@ -41,7 +42,7 @@ namespace SqCopyResolution.Services
                 do
                 {
                     var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                        "{0}/api/issues/search?projectKeys={1}&p={2}&ps={3}{4}",
+                        "{0}/api/issues/search?projectKeys={1}&additionalFields=comments&p={2}&ps={3}{4}",
                         SonarQubeUrl,
                         projectKey,
                         pageIndex,
@@ -145,7 +146,7 @@ namespace SqCopyResolution.Services
             return result;
         }
 
-        public void UpdateIssueResolution(string issueKey, string newResolution)
+        public void UpdateIssueResolution(string issueKey, string newResolution, Comment[] comments)
         {
             if (newResolution == null) { throw new ArgumentNullException("newResolution"); }
 
@@ -168,36 +169,21 @@ namespace SqCopyResolution.Services
             var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
                 "{0}/api/issues/do_transition",
                 SonarQubeUrl));
-
-            try
-            {
-                using (var httpClient = new HttpClient())
-                {
-                    AddHttpAuthorization(httpClient);
-                    using (var content = new FormUrlEncodedContent(new[] {
+            PostToServer(uri, new[] {
                         new KeyValuePair<string, string>("issue", issueKey),
                         new KeyValuePair<string, string>("transition", transition)
-                    }))
-                    {
-                        var response = httpClient.PostAsync(uri, content).Result;
-                        var responseContent = response.Content.ReadAsStringAsync().Result;
-                        if (response.StatusCode != System.Net.HttpStatusCode.OK)
-                        {
-                            Logger.LogError("Error when posting to the server! Uri = {0}, Status code = {1}, Response content: {2}",
-                                uri,
-                                response.StatusCode,
-                                responseContent);
-                        }
+                    });
 
-                    }
-                }
-            }
-            catch (Exception ex)
+            foreach (var comment in comments)
             {
-                Logger.LogError("Cannot get result from server! Exception: {0}", ex.ToString());
-                throw;
+                uri = new Uri(string.Format(CultureInfo.InvariantCulture,
+                    "{0}/api/issues/add_comment",
+                    SonarQubeUrl));
+                PostToServer(uri, new[] {
+                        new KeyValuePair<string, string>("issue", issueKey),
+                        new KeyValuePair<string, string>("text", comment.HtmlText)
+                    });
             }
-
         }
 
         private IList<Component> GetProjectComponents(string projectKey)
@@ -264,11 +250,42 @@ namespace SqCopyResolution.Services
             }
             catch (Exception ex)
             {
-                Logger.LogError("Cannot get result from server! Exception: {0}", ex.ToString());
+                Logger.LogError("Cannot get result from server! Uri = {0}, Exception: {1}", uri, ex.ToString());
                 throw;
             }
 
             return string.Empty;
+        }
+
+
+        private void PostToServer(Uri uri, KeyValuePair<string, string>[] parameters)
+        {
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    AddHttpAuthorization(httpClient);
+
+                    using (var content = new FormUrlEncodedContent(parameters))
+                    {
+                        var response = httpClient.PostAsync(uri, content).Result;
+                        var responseContent = response.Content.ReadAsStringAsync().Result;
+                        if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                        {
+                            Logger.LogError("Error when posting to the server! Uri = {0}, Status code = {1}, Response content: {2}",
+                                uri,
+                                response.StatusCode,
+                                responseContent);
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Cannot post to server! Uri: {0}, Exception: {0}", uri, ex.ToString());
+                throw;
+            }
         }
 
         private void AddHttpAuthorization(HttpClient httpClient)

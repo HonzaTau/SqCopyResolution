@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="Model\SonarQube\ApiComponentsTreeResult.cs" />
     <Compile Include="Model\SonarQube\ApiIssuesSearchResult.cs" />
+    <Compile Include="Model\SonarQube\Comment.cs" />
     <Compile Include="Model\SonarQube\Component.cs" />
     <Compile Include="Model\SonarQube\Issue.cs" />
     <Compile Include="Model\SonarQube\Paging.cs" />
