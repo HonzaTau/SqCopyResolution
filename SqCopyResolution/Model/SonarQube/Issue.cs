@@ -4,6 +4,7 @@ namespace SqCopyResolution.Model.SonarQube
 {
     public class Issue
     {
+        public string Key { get; set; }
         public string Rule { get; set; }
         public string Component { get; set; }
         public string Project { get; set; }

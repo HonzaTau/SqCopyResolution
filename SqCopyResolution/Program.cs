@@ -90,6 +90,7 @@ namespace SqCopyResolutionr
                             logger.LogInformation("Issue {0} is not resolved in destination project - updating issue resolution to {1}",
                                 sourceIssue,
                                 sourceIssue.Resolution);
+                            sqProxy.UpdateIssueResolution(destinationIssue.Key, sourceIssue.Resolution);
                         }
                     }
                 }

@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace SqCopyResolution.Services
 {
@@ -70,7 +68,7 @@ namespace SqCopyResolution.Services
             }
             else
             {
-                // If the number of issues is too high, we need to get them component by component
+                // If the number of issues is too high, we need to get their list by components
                 var components = GetProjectComponents(projectKey);
                 if (components != null)
                 {
@@ -145,6 +143,61 @@ namespace SqCopyResolution.Services
             Logger.LogDebug("\t{0} issues found", result.Count);
 
             return result;
+        }
+
+        public void UpdateIssueResolution(string issueKey, string newResolution)
+        {
+            if (newResolution == null) { throw new ArgumentNullException("newResolution"); }
+
+            Logger.LogDebug("Updating resolution for issue {0} to {1}", issueKey, newResolution);
+
+            string transition = string.Empty;
+
+            switch (newResolution.ToUpperInvariant())
+            {
+                case "FALSE-POSITIVE":
+                    transition = "falsepositive";
+                    break;
+                case "WONTFIX":
+                    transition = "wontfix";
+                    break;
+                default:
+                    throw new InvalidOperationException("Cannot update issue resolution to value " + newResolution);
+            }
+
+            var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
+                "{0}/api/issues/do_transition",
+                SonarQubeUrl));
+
+            try
+            {
+                using (var httpClient = new HttpClient())
+                {
+                    AddHttpAuthorization(httpClient);
+                    using (var content = new FormUrlEncodedContent(new[] {
+                        new KeyValuePair<string, string>("issue", issueKey),
+                        new KeyValuePair<string, string>("transition", transition)
+                    }))
+                    {
+                        var response = httpClient.PostAsync(uri, content).Result;
+                        var responseContent = response.Content.ReadAsStringAsync().Result;
+                        if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                        {
+                            Logger.LogError("Error when posting to the server! Uri = {0}, Status code = {1}, Response content: {2}",
+                                uri,
+                                response.StatusCode,
+                                responseContent);
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Cannot get result from server! Exception: {0}", ex.ToString());
+                throw;
+            }
+
         }
 
         private IList<Component> GetProjectComponents(string projectKey)
