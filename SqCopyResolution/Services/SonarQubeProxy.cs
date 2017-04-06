@@ -26,25 +26,89 @@ namespace SqCopyResolution.Services
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "I need to call Find method on the returned List, so I cannot use IList here.")]
-        public List<Issue> GetIssuesForProject(string projectKey)
+        public List<Issue> GetIssuesForProject(string projectKey, bool onlyFalsePositivesAndWontFixes)
         {
             var result = new List<Issue>();
 
-            var components = GetProjectComponents(projectKey);
-            if (components != null)
+            Logger.LogInformation("Getting list of issues for project {0}", projectKey);
+
+            var numberOfIssues = GetNumberOfIssuesForProject(projectKey, onlyFalsePositivesAndWontFixes);
+
+            // SonarQube cannot return more than 10000 issues in one response.
+            // Let's try to find, what the number of issues is
+            if (numberOfIssues < 10000)
             {
-                foreach (var component in components)
+                const int pageSize = 500;
+                var pageIndex = 1;
+                do
                 {
-                    result.AddRange(GetIssuesForComponent(component));
+                    var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
+                        "{0}/api/issues/search?projectKeys={1}&p={2}&ps={3}{4}",
+                        SonarQubeUrl,
+                        projectKey,
+                        pageIndex,
+                        pageSize,
+                        onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty));
+
+                    var responseContent = GetFromServer(uri);
+                    if (!string.IsNullOrEmpty(responseContent))
+                    {
+                        ApiIssuesSearchResult apiResult = JsonConvert.DeserializeObject<ApiIssuesSearchResult>(responseContent);
+                        result.AddRange(apiResult.Issues);
+                        if (apiResult.Paging.Total < (apiResult.Paging.PageIndex * apiResult.Paging.PageSize))
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                    pageIndex++;
+                } while (true);
+            }
+            else
+            {
+                // If the number of issues is too high, we need to get them component by component
+                var components = GetProjectComponents(projectKey);
+                if (components != null)
+                {
+                    foreach (var component in components)
+                    {
+                        result.AddRange(GetIssuesForComponent(component, onlyFalsePositivesAndWontFixes));
+                    }
                 }
             }
+
+            Logger.LogInformation("\t{0} issues found", result.Count);
 
             return result;
         }
 
-        private IList<Issue> GetIssuesForComponent(Component component)
+        private int GetNumberOfIssuesForProject(string projectKey, bool onlyFalsePositivesAndWontFixes)
         {
-            Logger.LogInformation("Getting list of issues for component {0}", component.Key);
+            Logger.LogDebug("Getting number of issues for project {0}", projectKey);
+
+            var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
+                "{0}/api/issues/search?projectKeys={1}&p=1&ps=1{2}",
+                SonarQubeUrl,
+                projectKey,
+                onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty));
+
+            var responseContent = GetFromServer(uri);
+            if (!string.IsNullOrEmpty(responseContent))
+            {
+                ApiIssuesSearchResult apiResult = JsonConvert.DeserializeObject<ApiIssuesSearchResult>(responseContent);
+                return apiResult.Paging.Total;
+            }
+
+            return -1;
+        }
+
+        private IList<Issue> GetIssuesForComponent(Component component, bool onlyFalsePositivesAndWontFixes)
+        {
+            Logger.LogDebug("Getting list of issues for component {0}", component.Key);
 
             var result = new List<Issue>();
 
@@ -53,11 +117,12 @@ namespace SqCopyResolution.Services
             do
             {
                 var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                    "{0}/api/issues/search?componentKeys={1}&p={2}&ps={3}",
+                    "{0}/api/issues/search?componentKeys={1}&p={2}&ps={3}{4}",
                     SonarQubeUrl,
                     component.Key,
                     pageIndex,
-                    pageSize));
+                    pageSize,
+                    onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty));
 
                 var responseContent = GetFromServer(uri);
                 if (!string.IsNullOrEmpty(responseContent))
@@ -77,14 +142,14 @@ namespace SqCopyResolution.Services
                 pageIndex++;
             } while (true);
 
-            Logger.LogInformation("\t{0} issues found", result.Count);
+            Logger.LogDebug("\t{0} issues found", result.Count);
 
             return result;
         }
 
         private IList<Component> GetProjectComponents(string projectKey)
         {
-            Logger.LogInformation("Getting list of components for project {0}", projectKey);
+            Logger.LogDebug("Getting list of components for project {0}", projectKey);
 
             var components = new List<Component>();
 
@@ -117,7 +182,7 @@ namespace SqCopyResolution.Services
                 pageIndex++;
             } while (true);
 
-            Logger.LogInformation("\t{0} components found", components.Count);
+            Logger.LogDebug("\t{0} components found", components.Count);
 
             return components;
         }

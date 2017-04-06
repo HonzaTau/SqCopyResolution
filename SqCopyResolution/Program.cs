@@ -57,15 +57,15 @@ namespace SqCopyResolutionr
             }
 
             var sqProxy = new SonarQubeProxy(logger, sonarQubeUrl, username, password);
-            var sourceIssues = sqProxy.GetIssuesForProject(sourceProjectKey);
+            var sourceIssues = sqProxy.GetIssuesForProject(sourceProjectKey, true);
 
             var destinationProjectKeysArray = destinationProjectKeys.Split(',');
             foreach (var destinationProjectKey in destinationProjectKeysArray)
             {
-                var destinationIssues = sqProxy.GetIssuesForProject(destinationProjectKey);
+                var destinationIssues = sqProxy.GetIssuesForProject(destinationProjectKey, false);
                 foreach (var sourceIssue in sourceIssues)
                 {
-                    if (string.CompareOrdinal(sourceIssue.Resolution, "REMOVED") != 0)
+                    if ((string.CompareOrdinal(sourceIssue.Resolution, "FALSE-POSITIVE") != 0) || (string.CompareOrdinal(sourceIssue.Resolution, "WONTFIX") != 0))
                     {
                         var destinationIssue = destinationIssues.Find((i) =>
                             i.Message == sourceIssue.Message
@@ -79,19 +79,13 @@ namespace SqCopyResolutionr
                             logger.LogInformation("Issue {0} was not found in destination project.",
                                 sourceIssue);
                         }
-                        else if (destinationIssue.Resolution == sourceIssue.Resolution)
+                        else if (!string.IsNullOrEmpty(destinationIssue.Resolution))
                         {
-                            logger.LogInformation("Issue {0} has the same resolution ({1}) in both projects.",
+                            logger.LogInformation("Issue {0} is already marked as {1} in the destination project.",
                                 sourceIssue,
-                                sourceIssue.Resolution);
+                                destinationIssue.Resolution);
                         }
-                        else if (destinationIssue.Resolution == sourceIssue.Resolution)
-                        {
-                            logger.LogInformation("Issue {0} has the same resolution ({1}) in both projects.",
-                                sourceIssue,
-                                sourceIssue.Resolution);
-                        }
-                        else if (!string.IsNullOrEmpty(sourceIssue.Resolution))
+                        else
                         {
                             logger.LogInformation("Issue {0} is not resolved in destination project - updating issue resolution to {1}",
                                 sourceIssue,
