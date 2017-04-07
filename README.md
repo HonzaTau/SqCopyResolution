@@ -2,15 +2,15 @@
 A command line tool for copying **Won't Fix** and **False-Positive** resolution flags between SonarQube projects.
 
 ## Background
-When you use multiple branches, you must to create a separate SonarQube project for each branch. The thing is, that when you resolve an issue as **Won't Fix** or **False Positive** in one SonarQube project, the issue still remain open in SonarQube projects for other branches, even after you merge your changes to other branches. This tool can copy **Won't Fix** and **False Positive** resolution flags from one SonarQube project to another.
+When you use multiple branches, you must create a separate SonarQube project for each branch. The thing is, that when you resolve an issue as **Won't Fix** or **False Positive** in one SonarQube project, the issue still remain open in SonarQube projects for other branches, even after you merge your code changes to other branches. This tool can copy **Won't Fix** and **False Positive** resolution flags from one SonarQube project to another.
 
 ## How to use this tool
 ### Requirements
 - Windows with .NET Framework 4.6.1
-- SonarQube 6.x (the tool is tested with SonarQube 6.3 but it should work also with older versions)
+- SonarQube 6.x (the tool is tested with SonarQube 6.3 but it should work with older versions as well)
 
 ### Run the tool
-You must send following command line arguments to the tool:
+The tool is run from Windows command line and expects following arguments:
 
 |Parameter|Description|
 |---|---|
