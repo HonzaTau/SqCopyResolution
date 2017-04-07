@@ -10,7 +10,7 @@ When you use multiple branches, you must create a separate SonarQube project for
 - SonarQube 6.x (the tool is tested with SonarQube 6.3 but it should work with older versions as well)
 
 ### Run the tool
-Download the **SqCopyResolution_1_0_0.zip** file from the **Releases** tab and extract its content into some folder. Then run the tool from Windows command line with following arguments:
+Download the **SqCopyResolution_1_0_0.zip** file from the [**Releases**](https://github.com/HonzaTau/SqCopyResolution/releases) tab and extract its content into some folder. Then run the tool from Windows command line with following arguments:
 
 |Parameter|Description|
 |---|---|
