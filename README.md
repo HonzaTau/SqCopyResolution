@@ -14,11 +14,12 @@ The tool is run from Windows command line and expects following arguments:
 
 |Parameter|Description|
 |---|---|
-|-url|SonarQube Url address, e.g. `http://sonarqube-staging.ourcompany.com`|
-|-username|SonarQube credentials - username|
-|-password|SonarQube credentials - password|
-|-sourceProjectKey|Key of the SonarQube project, from which you want to copy resolution flags, e.g. `OurProject:FeatureA`|
-|-destinationProjectKeys|Comma separated list of keys of the SonarQube projects, to which you want to copy resolution flags, e.g. `OurProject:HEAD,OurProject:FeatureB`|
+|`-url`|SonarQube Url address, e.g. `-url http://sonarqube-staging.ourcompany.com`|
+|`-username`|SonarQube credentials - username|
+|`-password`|SonarQube credentials - password|
+|`-sourceProjectKey`|Key of the SonarQube project, from which you want to copy resolution flags, e.g. `-sourceProjectKey OurProject:FeatureA`|
+|`-destinationProjectKeys`|Comma separated list of keys of the SonarQube projects, to which you want to copy resolution flags, e.g. `-destinationProjectKeys OurProject:HEAD,OurProject:FeatureB`|
+|`-logLevel` (optional)|Log level (All, Debug, Info, Warn, Error), e.g. `-logLevel Debug`. The default log level is Info.|
 
 Here is an example of the command, which copies resolution flags from the `OurProject:FeatureA` to `OurProject:HEAD` and `OurProject:FeatureB` SonarQube projects:
 ```

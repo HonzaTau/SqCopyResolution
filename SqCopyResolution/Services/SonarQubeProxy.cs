@@ -2,7 +2,6 @@
 using SqCopyResolution.Model.SonarQube;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Net.Http;
 using System.Text;
@@ -29,58 +28,61 @@ namespace SqCopyResolution.Services
         {
             var result = new List<Issue>();
 
-            Logger.LogInformation("Getting list of issues for project {0}", projectKey);
-
-            var numberOfIssues = GetNumberOfIssuesForProject(projectKey, onlyFalsePositivesAndWontFixes);
+            Logger.LogDebug("Getting list of issues for project {0}", projectKey);
 
             // SonarQube cannot return more than 10000 issues in one response.
-            // Let's try to find, what the number of issues is
-            if (numberOfIssues < 10000)
-            {
-                const int pageSize = 500;
-                var pageIndex = 1;
-                do
-                {
-                    var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                        "{0}/api/issues/search?projectKeys={1}&additionalFields=comments&p={2}&ps={3}{4}",
-                        SonarQubeUrl,
-                        projectKey,
-                        pageIndex,
-                        pageSize,
-                        onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty));
+            // Let's try to find out, what the number of issues is
+            var numberOfIssues = GetNumberOfIssuesForProject(projectKey, onlyFalsePositivesAndWontFixes);
 
-                    var responseContent = GetFromServer(uri);
-                    if (!string.IsNullOrEmpty(responseContent))
+            if (numberOfIssues > 0)
+            {
+                if (numberOfIssues < 10000)
+                {
+                    const int pageSize = 500;
+                    var pageIndex = 1;
+                    do
                     {
-                        ApiIssuesSearchResult apiResult = JsonConvert.DeserializeObject<ApiIssuesSearchResult>(responseContent);
-                        result.AddRange(apiResult.Issues);
-                        if (apiResult.Paging.Total < (apiResult.Paging.PageIndex * apiResult.Paging.PageSize))
+                        var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
+                            "{0}/api/issues/search?projectKeys={1}&additionalFields=comments&p={2}&ps={3}{4}",
+                            SonarQubeUrl,
+                            projectKey,
+                            pageIndex,
+                            pageSize,
+                            onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty));
+
+                        var responseContent = GetFromServer(uri);
+                        if (!string.IsNullOrEmpty(responseContent))
+                        {
+                            ApiIssuesSearchResult apiResult = JsonConvert.DeserializeObject<ApiIssuesSearchResult>(responseContent);
+                            result.AddRange(apiResult.Issues);
+                            if (apiResult.Paging.Total < (apiResult.Paging.PageIndex * apiResult.Paging.PageSize))
+                            {
+                                break;
+                            }
+                        }
+                        else
                         {
                             break;
                         }
-                    }
-                    else
-                    {
-                        break;
-                    }
 
-                    pageIndex++;
-                } while (true);
-            }
-            else
-            {
-                // If the number of issues is too high, we need to get their list by components
-                var components = GetProjectComponents(projectKey);
-                if (components != null)
+                        pageIndex++;
+                    } while (true);
+                }
+                else
                 {
-                    foreach (var component in components)
+                    // If the number of issues is too high, we need to get their list by components
+                    var components = GetProjectComponents(projectKey);
+                    if (components != null)
                     {
-                        result.AddRange(GetIssuesForComponent(component, onlyFalsePositivesAndWontFixes));
+                        foreach (var component in components)
+                        {
+                            result.AddRange(GetIssuesForComponent(component, onlyFalsePositivesAndWontFixes));
+                        }
                     }
                 }
             }
 
-            Logger.LogInformation("\t{0} issues found", result.Count);
+            Logger.LogDebug("\t{0} issues found", result.Count);
 
             return result;
         }

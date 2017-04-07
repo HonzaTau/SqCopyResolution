@@ -1,27 +1,47 @@
 ﻿using System;
+using SqCopyResolution.Model;
 
 namespace SqCopyResolution.Services
 {
     public class ConsoleLogger : ILogger
     {
-        public void LogDebug(string message, params object[] args)
+        public ConsoleLogger()
         {
-            ConsoleWriteLine(ConsoleColor.DarkGray, message, args);
+            LogLevel = LogLevel.Info;
         }
 
-        public void LogInformation(string message, params object[] args)
+        public LogLevel LogLevel { get; set; }
+
+        public void LogDebug(string message, params object[] args)
         {
-            ConsoleWriteLine(ConsoleColor.Gray, message, args);
+            if (LogLevel <= LogLevel.Debug)
+            {
+                ConsoleWriteLine(ConsoleColor.DarkGray, message, args);
+            }
+        }
+
+        public void LogInfo(string message, params object[] args)
+        {
+            if (LogLevel <= LogLevel.Info)
+            {
+                ConsoleWriteLine(ConsoleColor.Gray, message, args);
+            }
         }
 
         public void LogWarn(string message, params object[] args)
         {
-            ConsoleWriteLine(ConsoleColor.Yellow, message, args);
+            if (LogLevel <= LogLevel.Warning)
+            {
+                ConsoleWriteLine(ConsoleColor.Yellow, message, args);
+            }
         }
 
         public void LogError(string message, params object[] args)
         {
-            ConsoleWriteLine(ConsoleColor.Red, message, args);
+            if (LogLevel <= LogLevel.Error)
+            {
+                ConsoleWriteLine(ConsoleColor.Red, message, args);
+            }
         }
 
         private static void ConsoleWriteLine(ConsoleColor foregroundColor, string message, params object[] args)
