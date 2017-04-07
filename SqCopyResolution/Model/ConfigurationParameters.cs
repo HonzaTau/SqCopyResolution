@@ -1,10 +1,12 @@
-﻿using System;
+﻿using SqCopyResolution.Services;
+using System;
 using System.Configuration;
 
 namespace SqCopyResolution.Model
 {
     public class ConfigurationParameters
     {
+        private ILogger Logger { get; set; }
         public string SonarQubeUrl { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
@@ -13,8 +15,10 @@ namespace SqCopyResolution.Model
         public string[] DestinationProjectKeys { get; set; }
         public LogLevel LogLevel { get; set; }
 
-        public ConfigurationParameters(string[] commandLineArguments)
+        public ConfigurationParameters(ILogger logger, string[] commandLineArguments)
         {
+            Logger = logger;
+
             SonarQubeUrl = ConfigurationManager.AppSettings["SQ_Url"];
             UserName = ConfigurationManager.AppSettings["SQ_UserName"];
             Password = ConfigurationManager.AppSettings["SQ_Password"];
@@ -75,6 +79,39 @@ namespace SqCopyResolution.Model
                     }
                 }
             }
+        }
+
+        internal bool Validate()
+        {
+            var result = true;
+
+            if (string.IsNullOrEmpty(SonarQubeUrl))
+            {
+                Logger.LogError("SonarQube url is empty.");
+                result = false;
+            }
+            if (string.IsNullOrEmpty(UserName))
+            {
+                Logger.LogError("SonarQube user name is empty.");
+                result = false;
+            }
+            if (string.IsNullOrEmpty(Password))
+            {
+                Logger.LogError("SonarQube password is empty.");
+                result = false;
+            }
+            if (string.IsNullOrEmpty(SourceProjectKey))
+            {
+                Logger.LogError("Source project key is empty.");
+                result = false;
+            }
+            if (DestinationProjectKeys.Length < 1)
+            {
+                Logger.LogError("List of destination project keys is empty.");
+                result = false;
+            }
+
+            return result;
         }
     }
 }

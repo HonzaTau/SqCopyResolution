@@ -17,12 +17,13 @@ namespace SqCopyResolutionr
                 Assembly.GetEntryAssembly().GetName().Version));
             logger.LogInfo(string.Empty);
 
-            var configParams = new ConfigurationParameters(args);
+            var configParams = new ConfigurationParameters(logger, args);
             logger.LogLevel = configParams.LogLevel;
 
-            CopyResolutions(logger, configParams);
-
-            Console.ReadLine();
+            if (configParams.Validate())
+            {
+                CopyResolutions(logger, configParams);
+            }
         }
 
         private static void CopyResolutions(ConsoleLogger logger, ConfigurationParameters configParams)
