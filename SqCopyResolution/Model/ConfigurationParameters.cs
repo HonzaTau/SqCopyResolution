@@ -30,8 +30,6 @@ namespace SqCopyResolution.Model
             Password = GetConfigValue(commandLineArguments, "password", appConfig.Profiles[profileName].SonarQube.Password);
             SourceProjectKey = GetConfigValue(commandLineArguments, "sourceProjectKey", appConfig.Profiles[profileName].Source.ProjectKey);
             DestinationProjectKeys = GetConfigValue(commandLineArguments, "destinationProjectKeys", appConfig.Profiles[profileName].Destination.ProjectKeys).Split(',');
-
-            Validate();
         }
 
         internal static LogLevel GetLogLevel(List<string> commandLineArguments)
