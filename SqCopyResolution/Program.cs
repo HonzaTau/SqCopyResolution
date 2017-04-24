@@ -2,6 +2,7 @@
 using SqCopyResolution.Services;
 using System.Globalization;
 using System.Reflection;
+using System.Linq;
 
 namespace SqCopyResolutionr
 {
@@ -16,7 +17,7 @@ namespace SqCopyResolutionr
                 Assembly.GetEntryAssembly().GetName().Version));
             logger.LogInfo(string.Empty);
 
-            var configParams = new ConfigurationParameters(logger, args);
+            var configParams = new ConfigurationParameters(logger, args.ToList());
             logger.LogLevel = configParams.LogLevel;
 
             if (configParams.Validate())

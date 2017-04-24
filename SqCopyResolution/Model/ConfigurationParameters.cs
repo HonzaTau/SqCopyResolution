@@ -1,6 +1,7 @@
 ﻿using SqCopyResolution.Services;
 using System;
 using System.Configuration;
+using System.Collections.Generic;
 
 namespace SqCopyResolution.Model
 {
@@ -15,71 +16,48 @@ namespace SqCopyResolution.Model
         public string[] DestinationProjectKeys { get; set; }
         public LogLevel LogLevel { get; set; }
 
-        public ConfigurationParameters(ILogger logger, string[] commandLineArguments)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists")]
+        public ConfigurationParameters(ILogger logger, List<string> commandLineArguments)
         {
             Logger = logger;
 
-            SqCopyResolutionSection config = (SqCopyResolutionSection)ConfigurationManager.GetSection("sqCopyResolutionGroup/sqCopyResolution");
+            LogLevel = GetLogLevel(commandLineArguments);
 
-            SonarQubeUrl = config.Profile.SonarQube.Url;
-            UserName = config.Profile.SonarQube.UserName;
-            Password = config.Profile.SonarQube.Password;
-            SourceProjectKey = config.Profile.Source.ProjectKey;
-            DestinationProjectKeys = config.Profile.Destination.ProjectKeys.Split(',');
+            SqCopyResolutionSection appConfig = (SqCopyResolutionSection)ConfigurationManager.GetSection("sqCopyResolutionGroup/sqCopyResolution");
+            string profileName = GetConfigValue(commandLineArguments, "profileName", "Default");
+            SonarQubeUrl = GetConfigValue(commandLineArguments, "url", appConfig.Profiles[profileName].SonarQube.Url);
+            UserName = GetConfigValue(commandLineArguments, "username", appConfig.Profiles[profileName].SonarQube.UserName);
+            Password = GetConfigValue(commandLineArguments, "password", appConfig.Profiles[profileName].SonarQube.Password);
+            SourceProjectKey = GetConfigValue(commandLineArguments, "sourceProjectKey", appConfig.Profiles[profileName].Source.ProjectKey);
+            DestinationProjectKeys = GetConfigValue(commandLineArguments, "destinationProjectKeys", appConfig.Profiles[profileName].Destination.ProjectKeys).Split(',');
+
+            Validate();
+        }
+
+        internal static LogLevel GetLogLevel(List<string> commandLineArguments)
+        {
+            var logLevelName = GetConfigValue(commandLineArguments, "logLevel", "Info");
             LogLevel logLevel;
-            if (Enum.TryParse<LogLevel>(ConfigurationManager.AppSettings["SQ_LogLevel"], true, out logLevel))
+            if (Enum.TryParse<LogLevel>(logLevelName, true, out logLevel))
             {
-                LogLevel = logLevel;
+                return logLevel;
             }
             else
             {
-                LogLevel = LogLevel.Info;
+                return LogLevel.Info;
             }
+        }
 
-            if (commandLineArguments != null)
+        internal static string GetConfigValue(List<string> commandLineArguments, string configValueName, string defaultValue)
+        {
+            var argumentIndex = commandLineArguments.FindIndex(a => a.ToUpperInvariant() == ("-" + configValueName.ToUpperInvariant()));
+            if (argumentIndex < 0)
             {
-                var argsIndex = 0;
-                while (argsIndex < commandLineArguments.Length)
-                {
-                    switch (commandLineArguments[argsIndex].ToUpperInvariant())
-                    {
-                        case "-URL":
-                            SonarQubeUrl = commandLineArguments[argsIndex + 1].Trim();
-                            argsIndex += 2;
-                            break;
-                        case "-USERNAME":
-                            UserName = commandLineArguments[argsIndex + 1].Trim();
-                            argsIndex += 2;
-                            break;
-                        case "-PASSWORD":
-                            Password = commandLineArguments[argsIndex + 1].Trim();
-                            argsIndex += 2;
-                            break;
-                        case "-SOURCEPROJECTKEY":
-                            SourceProjectKey = commandLineArguments[argsIndex + 1].Trim();
-                            argsIndex += 2;
-                            break;
-                        case "-DESTINATIONPROJECTKEYS":
-                            DestinationProjectKeys = commandLineArguments[argsIndex + 1].Trim().Split(',');
-                            argsIndex += 2;
-                            break;
-                        case "-LOGLEVEL":
-                            if (Enum.TryParse<LogLevel>(commandLineArguments[argsIndex + 1], true, out logLevel))
-                            {
-                                LogLevel = logLevel;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Unknown log level: {0}", commandLineArguments[argsIndex + 1]);
-                            }
-                            argsIndex += 2;
-                            break;
-                        default:
-                            Console.WriteLine("Unknown argument: {0}", commandLineArguments[argsIndex]);
-                            argsIndex += 2;
-                            break;
-                    }
-                }
+                return defaultValue;
+            }
+            else
+            {
+                return commandLineArguments[argumentIndex + 1].Trim();
             }
         }
 

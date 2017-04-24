@@ -1,22 +1,69 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 
 namespace SqCopyResolution.Model
 {
     public class SqCopyResolutionSection : ConfigurationSection
     {
         // Create a "font" element.
-        [ConfigurationProperty("profile")]
-        public ProfileElement Profile
+        [ConfigurationProperty("profiles")]
+        public ProfilesCollection Profiles
         {
             get
             {
-                return (ProfileElement)this["profile"];
+                return (ProfilesCollection)this["profiles"];
             }
-            set
-            { this["profile"] = value; }
         }
     }
+
+    [ConfigurationCollection(typeof(ProfileElement), AddItemName = "profile")]
+    public class ProfilesCollection : ConfigurationElementCollection, IEnumerable<ProfileElement>
+    {
+
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new ProfileElement();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            var l_configElement = element as ProfileElement;
+            if (l_configElement != null)
+                return l_configElement.Name;
+            else
+                return null;
+        }
+
+        public ProfileElement this[int index]
+        {
+            get
+            {
+                return BaseGet(index) as ProfileElement;
+            }
+        }
+
+        public new ProfileElement this[string name]
+        {
+            get
+            {
+                return BaseGet(name) as ProfileElement;
+            }
+        }
+
+        #region IEnumerable<ConfigElement> Members
+
+        IEnumerator<ProfileElement> IEnumerable<ProfileElement>.GetEnumerator()
+        {
+            return (from i in Enumerable.Range(0, this.Count)
+                select this[i])
+                .GetEnumerator();
+        }
+
+        #endregion
+    }
+
 
     public class ProfileElement : ConfigurationElement
     {
