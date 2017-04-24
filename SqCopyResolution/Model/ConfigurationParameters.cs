@@ -19,11 +19,13 @@ namespace SqCopyResolution.Model
         {
             Logger = logger;
 
-            SonarQubeUrl = ConfigurationManager.AppSettings["SQ_Url"];
-            UserName = ConfigurationManager.AppSettings["SQ_UserName"];
-            Password = ConfigurationManager.AppSettings["SQ_Password"];
-            SourceProjectKey = ConfigurationManager.AppSettings["SQ_SourceProjectKey"];
-            DestinationProjectKeys = ConfigurationManager.AppSettings["SQ_DestinationProjectKeys"].Split(',');
+            SqCopyResolutionSection config = (SqCopyResolutionSection)ConfigurationManager.GetSection("sqCopyResolutionGroup/sqCopyResolution");
+
+            SonarQubeUrl = config.Profile.SonarQube.Url;
+            UserName = config.Profile.SonarQube.UserName;
+            Password = config.Profile.SonarQube.Password;
+            SourceProjectKey = config.Profile.Source.ProjectKey;
+            DestinationProjectKeys = config.Profile.Destination.ProjectKeys.Split(',');
             LogLevel logLevel;
             if (Enum.TryParse<LogLevel>(ConfigurationManager.AppSettings["SQ_LogLevel"], true, out logLevel))
             {
