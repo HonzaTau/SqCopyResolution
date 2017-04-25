@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\ConfigurationParameters.cs" />
+    <Compile Include="Model\OperationType.cs" />
     <Compile Include="Model\LogLevel.cs" />
     <Compile Include="Model\SonarQube\ApiComponentsTreeResult.cs" />
     <Compile Include="Model\SonarQube\ApiIssuesSearchResult.cs" />
@@ -71,6 +72,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ConsoleLogger.cs" />
     <Compile Include="Services\ILogger.cs" />
+    <Compile Include="Services\ISonarQubeProxy.cs" />
+    <Compile Include="Services\Operation.cs" />
     <Compile Include="Services\SonarQubeProxy.cs" />
   </ItemGroup>
   <ItemGroup>

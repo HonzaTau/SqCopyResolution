@@ -15,13 +15,15 @@ namespace SqCopyResolution.Model
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "This is just for passing list of destination project keys to the applicaton.")]
         public string[] DestinationProjectKeys { get; set; }
         public LogLevel LogLevel { get; set; }
+        public OperationType OperationType { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists")]
         public ConfigurationParameters(ILogger logger, List<string> commandLineArguments)
         {
-            Logger = logger;
+            Logger = logger ?? throw new ArgumentNullException("logger");
 
             LogLevel = GetLogLevel(commandLineArguments);
+            logger.LogLevel = LogLevel;
 
             SqCopyResolutionSection appConfig = (SqCopyResolutionSection)ConfigurationManager.GetSection("sqCopyResolutionGroup/sqCopyResolution");
             string profileName = GetConfigValue(commandLineArguments, "profileName", "Default");
@@ -30,6 +32,8 @@ namespace SqCopyResolution.Model
             Password = GetConfigValue(commandLineArguments, "password", appConfig.Profiles[profileName].SonarQube.Password);
             SourceProjectKey = GetConfigValue(commandLineArguments, "sourceProjectKey", appConfig.Profiles[profileName].Source.ProjectKey);
             DestinationProjectKeys = GetConfigValue(commandLineArguments, "destinationProjectKeys", appConfig.Profiles[profileName].Destination.ProjectKeys).Split(',');
+
+            OperationType = OperationType.CopyFalsePositivesAndWontFixes;
         }
 
         internal static LogLevel GetLogLevel(List<string> commandLineArguments)

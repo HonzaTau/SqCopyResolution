@@ -11,71 +11,24 @@ namespace SqCopyResolutionr
         static void Main(string[] args)
         {
             var logger = new ConsoleLogger();
+            LogApplicationHeader(logger);
+
+            var configParams = new ConfigurationParameters(logger, args.ToList());
+
+            if (configParams.Validate())
+            {
+                var operation = new Operation(logger, configParams);
+                operation.Run();
+            }
+        }
+
+        private static void LogApplicationHeader(ConsoleLogger logger)
+        {
             logger.LogInfo(string.Format(CultureInfo.InvariantCulture,
                 "{0} v{1}",
                 Assembly.GetEntryAssembly().GetName().Name,
                 Assembly.GetEntryAssembly().GetName().Version));
             logger.LogInfo(string.Empty);
-
-            var configParams = new ConfigurationParameters(logger, args.ToList());
-            logger.LogLevel = configParams.LogLevel;
-
-            if (configParams.Validate())
-            {
-                CopyResolutions(logger, configParams);
-            }
-        }
-
-        private static void CopyResolutions(ConsoleLogger logger, ConfigurationParameters configParams)
-        {
-            var sqProxy = new SonarQubeProxy(logger, configParams.SonarQubeUrl, configParams.UserName, configParams.Password);
-
-            logger.LogInfo("Getting list of issues for project {0}", configParams.SourceProjectKey);
-            var sourceIssues = sqProxy.GetIssuesForProject(configParams.SourceProjectKey, true);
-
-            if (sourceIssues.Count > 0)
-            {
-                foreach (var destinationProjectKey in configParams.DestinationProjectKeys)
-                {
-                    logger.LogInfo("Copying resolutions to project {0}", destinationProjectKey);
-
-                    var destinationIssues = sqProxy.GetIssuesForProject(destinationProjectKey, false);
-                    foreach (var sourceIssue in sourceIssues)
-                    {
-                        if ((string.CompareOrdinal(sourceIssue.Resolution, "FALSE-POSITIVE") != 0) || (string.CompareOrdinal(sourceIssue.Resolution, "WONTFIX") != 0))
-                        {
-                            logger.LogInfo("Issue {0}", sourceIssue);
-
-                            var destinationIssue = destinationIssues.Find((i) =>
-                                i.Message == sourceIssue.Message
-                                && i.Rule == sourceIssue.Rule
-                                && i.ComponentPath == sourceIssue.ComponentPath
-                                && i.StartLine == sourceIssue.StartLine
-                                && i.StartOffset == sourceIssue.StartOffset);
-
-                            if (destinationIssue == null)
-                            {
-                                logger.LogWarn("\tNot found in the destination project");
-                            }
-                            else if (!string.IsNullOrEmpty(destinationIssue.Resolution))
-                            {
-                                logger.LogInfo("\tIssue is already marked as {0} in the destination project.",
-                                    destinationIssue.Resolution);
-                            }
-                            else
-                            {
-                                logger.LogInfo("\tUpdating issue resolution to {0}",
-                                    sourceIssue.Resolution);
-                                sqProxy.UpdateIssueResolution(destinationIssue.Key, sourceIssue.Resolution, sourceIssue.Comments);
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                logger.LogWarn("There are no issues to copy!");
-            }
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace SqCopyResolution.Services
 {
-    public class SonarQubeProxy
+    public class SonarQubeProxy : ISonarQubeProxy
     {
         private ILogger Logger { get; set; }
         private string SonarQubeUrl { get; set; }
@@ -70,7 +70,7 @@ namespace SqCopyResolution.Services
                 }
                 else
                 {
-                    // If the number of issues is too high, we need to get their list by components
+                    // If the number of issues is too high, we need to get their list component by component
                     var components = GetProjectComponents(projectKey);
                     if (components != null)
                     {
