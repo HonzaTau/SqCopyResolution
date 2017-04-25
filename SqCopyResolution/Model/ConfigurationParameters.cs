@@ -27,13 +27,13 @@ namespace SqCopyResolution.Model
 
             SqCopyResolutionSection appConfig = (SqCopyResolutionSection)ConfigurationManager.GetSection("sqCopyResolutionGroup/sqCopyResolution");
             string profileName = GetConfigValue(commandLineArguments, "profileName", "Default");
-            SonarQubeUrl = GetConfigValue(commandLineArguments, "url", appConfig.Profiles[profileName].SonarQube.Url);
-            UserName = GetConfigValue(commandLineArguments, "username", appConfig.Profiles[profileName].SonarQube.UserName);
-            Password = GetConfigValue(commandLineArguments, "password", appConfig.Profiles[profileName].SonarQube.Password);
-            SourceProjectKey = GetConfigValue(commandLineArguments, "sourceProjectKey", appConfig.Profiles[profileName].Source.ProjectKey);
-            DestinationProjectKeys = GetConfigValue(commandLineArguments, "destinationProjectKeys", appConfig.Profiles[profileName].Destination.ProjectKeys).Split(',');
-
-            OperationType = OperationType.CopyFalsePositivesAndWontFixes;
+            ProfileElement profile = appConfig.Profiles[profileName];
+            SonarQubeUrl = GetConfigValue(commandLineArguments, "url", profile.SonarQube.Url);
+            UserName = GetConfigValue(commandLineArguments, "username", profile.SonarQube.UserName);
+            Password = GetConfigValue(commandLineArguments, "password", profile.SonarQube.Password);
+            SourceProjectKey = GetConfigValue(commandLineArguments, "sourceProjectKey", profile.Source.ProjectKey);
+            DestinationProjectKeys = GetConfigValue(commandLineArguments, "destinationProjectKeys", profile.Destination.ProjectKeys).Split(',');
+            OperationType = GetOperationType(commandLineArguments, profile);
         }
 
         internal static LogLevel GetLogLevel(List<string> commandLineArguments)
@@ -47,6 +47,20 @@ namespace SqCopyResolution.Model
             else
             {
                 return LogLevel.Info;
+            }
+        }
+
+        internal static OperationType GetOperationType(List<string> commandLineArguments, ProfileElement profile)
+        {
+            var operationTypeName = GetConfigValue(commandLineArguments, "profile", profile.Operation.Type);
+            OperationType operationType;
+            if (Enum.TryParse<OperationType>(operationTypeName, true, out operationType))
+            {
+                return operationType;
+            }
+            else
+            {
+                return OperationType.CopyFalsePositivesAndWontFixes;
             }
         }
 

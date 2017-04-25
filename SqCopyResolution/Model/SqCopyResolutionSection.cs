@@ -64,7 +64,6 @@ namespace SqCopyResolution.Model
         #endregion
     }
 
-
     public class ProfileElement : ConfigurationElement
     {
         [ConfigurationProperty("name", IsRequired = true)]
@@ -113,6 +112,18 @@ namespace SqCopyResolution.Model
             set
             {
                 this["destination"] = value;
+            }
+        }
+        [ConfigurationProperty("operation", IsRequired = true)]
+        public OperationElement Operation
+        {
+            get
+            {
+                return (OperationElement)this["operation"];
+            }
+            set
+            {
+                this["operation"] = value;
             }
         }
     }
@@ -187,6 +198,22 @@ namespace SqCopyResolution.Model
             set
             {
                 this["password"] = value;
+            }
+        }
+    }
+
+    public class OperationElement : ConfigurationElement
+    {
+        [ConfigurationProperty("type", IsRequired = true)]
+        public String Type
+        {
+            get
+            {
+                return (String)this["type"];
+            }
+            set
+            {
+                this["type"] = value;
             }
         }
     }
