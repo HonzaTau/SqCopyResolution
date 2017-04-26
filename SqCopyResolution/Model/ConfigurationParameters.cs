@@ -52,7 +52,7 @@ namespace SqCopyResolution.Model
 
         internal static OperationType GetOperationType(List<string> commandLineArguments, ProfileElement profile)
         {
-            var operationTypeName = GetConfigValue(commandLineArguments, "profile", profile.Operation.Type);
+            var operationTypeName = GetConfigValue(commandLineArguments, "profile", profile.Operation.OperationType);
             OperationType operationType;
             if (Enum.TryParse<OperationType>(operationTypeName, true, out operationType))
             {

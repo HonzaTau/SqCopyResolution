@@ -205,7 +205,7 @@ namespace SqCopyResolution.Model
     public class OperationElement : ConfigurationElement
     {
         [ConfigurationProperty("type", IsRequired = true)]
-        public String Type
+        public String OperationType
         {
             get
             {

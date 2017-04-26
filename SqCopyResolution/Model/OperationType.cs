@@ -4,7 +4,6 @@
     {
         None = 0,
         CopyFalsePositivesAndWontFixes = 1,
-        CopyFalsePositives = 2,
-        InheritedAsWontFix = 3,
+        SyncSubBranches = 2,
     }
 }

@@ -26,13 +26,18 @@ namespace SqCopyResolution.Services
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists", Justification = "I need to call Find method on the returned List, so I cannot use IList here.")]
         public List<Issue> GetIssuesForProject(string projectKey, bool onlyFalsePositivesAndWontFixes)
         {
+            return GetIssuesForProject(projectKey: projectKey, resolutions: "FALSE-POSITIVE,WONTFIX");
+        }
+
+        private List<Issue> GetIssuesForProject(string projectKey = null, string resolutions = null, string statuses = null)
+        {
             var result = new List<Issue>();
 
             Logger.LogDebug("Getting list of issues for project {0}", projectKey);
 
             // SonarQube cannot return more than 10000 issues in one response.
             // Let's try to find out, what the number of issues is
-            var numberOfIssues = GetNumberOfIssuesForProject(projectKey, onlyFalsePositivesAndWontFixes);
+            var numberOfIssues = GetNumberOfIssuesForProject(projectKey, resolutions, statuses);
 
             if (numberOfIssues > 0)
             {
@@ -42,13 +47,7 @@ namespace SqCopyResolution.Services
                     var pageIndex = 1;
                     do
                     {
-                        var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                            "{0}/api/issues/search?projectKeys={1}&additionalFields=comments&p={2}&ps={3}{4}",
-                            SonarQubeUrl,
-                            projectKey,
-                            pageIndex,
-                            pageSize,
-                            onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty));
+                        var uri = GetIssuesSearchUri(pageIndex, pageSize, projectKey: projectKey);
 
                         var responseContent = GetFromServer(uri);
                         if (!string.IsNullOrEmpty(responseContent))
@@ -76,7 +75,7 @@ namespace SqCopyResolution.Services
                     {
                         foreach (var component in components)
                         {
-                            result.AddRange(GetIssuesForComponent(component, onlyFalsePositivesAndWontFixes));
+                            result.AddRange(GetIssuesForComponent(component, resolutions, statuses));
                         }
                     }
                 }
@@ -87,15 +86,29 @@ namespace SqCopyResolution.Services
             return result;
         }
 
-        private int GetNumberOfIssuesForProject(string projectKey, bool onlyFalsePositivesAndWontFixes)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists")]
+        public List<Issue> GetAllIssuesForProject(string sourceProjectKey)
+        {
+            return GetIssuesForProject(projectKey: sourceProjectKey);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists")]
+        public List<Issue> GetOpenIssuesForProject(string sourceProjectKey)
+        {
+            return GetIssuesForProject(projectKey: sourceProjectKey, statuses: "OPEN,REOPENED");
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists")]
+        public List<Issue> GetFalsePositiveIssuesForProject(string sourceProjectKey)
+        {
+            return GetIssuesForProject(projectKey: sourceProjectKey, resolutions: "FALSE-POSITIVE");
+        }
+
+        private int GetNumberOfIssuesForProject(string projectKey, string resolutions, string statuses)
         {
             Logger.LogDebug("Getting number of issues for project {0}", projectKey);
 
-            var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                "{0}/api/issues/search?projectKeys={1}&p=1&ps=1{2}",
-                SonarQubeUrl,
-                projectKey,
-                onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty));
+            var uri = GetIssuesSearchUri(1, 1, projectKey: projectKey, resolutions: resolutions, statuses: statuses);
 
             var responseContent = GetFromServer(uri);
             if (!string.IsNullOrEmpty(responseContent))
@@ -107,7 +120,7 @@ namespace SqCopyResolution.Services
             return -1;
         }
 
-        private IList<Issue> GetIssuesForComponent(Component component, bool onlyFalsePositivesAndWontFixes)
+        private IList<Issue> GetIssuesForComponent(Component component, string resolutions, string statuses)
         {
             Logger.LogDebug("Getting list of issues for component {0}", component.Key);
 
@@ -117,13 +130,7 @@ namespace SqCopyResolution.Services
             var pageIndex = 1;
             do
             {
-                var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                    "{0}/api/issues/search?componentKeys={1}&p={2}&ps={3}{4}",
-                    SonarQubeUrl,
-                    component.Key,
-                    pageIndex,
-                    pageSize,
-                    onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty));
+                var uri = GetIssuesSearchUri(pageIndex, pageSize, componentKey: component.Key, resolutions: resolutions, statuses: statuses);
 
                 var responseContent = GetFromServer(uri);
                 if (!string.IsNullOrEmpty(responseContent))
@@ -231,6 +238,46 @@ namespace SqCopyResolution.Services
             return components;
         }
 
+        private Uri GetIssuesSearchUri(int pageIndex, int pageSize, string projectKey = null, string componentKey = null, string resolutions = null, string statuses = null)
+        {
+            var uriBuilder = new StringBuilder();
+            uriBuilder.AppendFormat(CultureInfo.InvariantCulture,
+                "{0}/api/issues/search?&p={1}&ps={2}",
+                SonarQubeUrl,
+                pageIndex,
+                pageSize);
+
+            if (!string.IsNullOrEmpty(projectKey))
+            {
+                uriBuilder.AppendFormat(CultureInfo.InvariantCulture,
+                    "&projectKeys={0}",
+                    projectKey);
+            }
+
+            if (!string.IsNullOrEmpty(componentKey))
+            {
+                uriBuilder.AppendFormat(CultureInfo.InvariantCulture,
+                    "&componentKeys={0}",
+                    componentKey);
+            }
+
+            if (!string.IsNullOrEmpty(resolutions))
+            {
+                uriBuilder.AppendFormat(CultureInfo.InvariantCulture,
+                    "&resolutions={0}",
+                    resolutions);
+            }
+
+            if (!string.IsNullOrEmpty(statuses))
+            {
+                uriBuilder.AppendFormat(CultureInfo.InvariantCulture,
+                    "&statuses={0}",
+                    statuses);
+            }
+
+            return new Uri(uriBuilder.ToString());
+        }
+
         private string GetFromServer(Uri uri)
         {
             try
@@ -261,7 +308,6 @@ namespace SqCopyResolution.Services
 
             return string.Empty;
         }
-
 
         private void PostToServer(Uri uri, KeyValuePair<string, string>[] parameters)
         {
