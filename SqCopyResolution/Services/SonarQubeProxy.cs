@@ -47,7 +47,7 @@ namespace SqCopyResolution.Services
                     var pageIndex = 1;
                     do
                     {
-                        var uri = GetIssuesSearchUri(pageIndex, pageSize, projectKey: projectKey);
+                        var uri = GetIssuesSearchUri(pageIndex, pageSize, projectKey: projectKey, resolutions: resolutions, statuses: statuses);
 
                         var responseContent = GetFromServer(uri);
                         if (!string.IsNullOrEmpty(responseContent))

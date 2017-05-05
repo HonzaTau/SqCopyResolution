@@ -158,6 +158,7 @@ namespace SqCopyResolution.Services
                                 SonarQubeProxy.UpdateIssueResolution(subBranchIssue.Key,
                                     "WONTFIX",
                                     new[] { new Comment() { HtmlText = "Issue was inherited from the parent stream" } });
+                                subBranchIssues.Remove(subBranchIssue);
                             }
                             else if (
                                 (string.CompareOrdinal(parentIssue.Resolution, "FALSE-POSITIVE") == 0) 
@@ -165,6 +166,7 @@ namespace SqCopyResolution.Services
                             {
                                 Logger.LogDebug("Updating issue resolution to {0} in sub-branch", parentIssue.Resolution);
                                 SonarQubeProxy.UpdateIssueResolution(subBranchIssue.Key, parentIssue.Resolution, parentIssue.Comments);
+                                subBranchIssues.Remove(subBranchIssue);
                             }
                         }
                     }
@@ -178,8 +180,10 @@ namespace SqCopyResolution.Services
                 i.Message == issue.Message
                 && i.Rule == issue.Rule
                 && i.ComponentPath == issue.ComponentPath
-                && i.StartLine == issue.StartLine
-                && i.StartOffset == issue.StartOffset);
+                && i.StartLine >= (0.9 * issue.StartLine)
+                && i.StartLine <= (1.1 * issue.StartLine)
+                && i.StartOffset >= (0.9 * issue.StartOffset)
+                && i.StartOffset <= (1.1 * issue.StartOffset));
         }
     }
 }
