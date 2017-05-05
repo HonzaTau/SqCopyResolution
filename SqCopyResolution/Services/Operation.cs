@@ -93,6 +93,7 @@ namespace SqCopyResolution.Services
         {
             Logger.LogInfo("Getting list of open issues in parent branch {0}", ConfigParameters.SourceProjectKey);
             var parentIssues = SonarQubeProxy.GetOpenIssuesForProject(ConfigParameters.SourceProjectKey);
+            Logger.LogInfo("Found {0} issues", parentIssues.Count);
 
             Logger.LogInfo("Getting list of False-Positive issues in sub-branches");
             foreach (var destinationProjectKey in ConfigParameters.DestinationProjectKeys)
@@ -101,8 +102,10 @@ namespace SqCopyResolution.Services
                 {
                     Logger.LogDebug("Getting list of False-Positive issues for project {0}", destinationProjectKey);
                     var subBranchIssues = SonarQubeProxy.GetFalsePositiveIssuesForProject(destinationProjectKey);
+                    Logger.LogInfo("Found {0} issues", subBranchIssues.Count);
                     if (subBranchIssues.Count > 0)
                     {
+                        var numberOfUpdatedIssues = 0;
                         Logger.LogInfo("Copying False-Positive resolutions to parent branch");
                         foreach (var subBranchIssue in subBranchIssues)
                         {
@@ -120,8 +123,10 @@ namespace SqCopyResolution.Services
                                     subBranchIssue.Resolution);
                                 SonarQubeProxy.UpdateIssueResolution(parentIssue.Key, subBranchIssue.Resolution, subBranchIssue.Comments);
                                 parentIssues.Remove(parentIssue);
+                                numberOfUpdatedIssues++;
                             }
                         }
+                        Logger.LogInfo("Updated {0} issues in parent branch", numberOfUpdatedIssues);
                     }
                 }
             }
@@ -131,6 +136,7 @@ namespace SqCopyResolution.Services
         {
             Logger.LogInfo("Getting list of all issues in parent branch {0}", ConfigParameters.SourceProjectKey);
             var parentIssues = SonarQubeProxy.GetAllIssuesForProject(ConfigParameters.SourceProjectKey);
+            Logger.LogInfo("Found {0} issues", parentIssues.Count);
 
             Logger.LogInfo("Getting list of open issues in sub-branches");
             foreach (var destinationProjectKey in ConfigParameters.DestinationProjectKeys)
@@ -139,9 +145,12 @@ namespace SqCopyResolution.Services
                 {
                     Logger.LogDebug("Getting list of open issues for project {0}", destinationProjectKey);
                     var subBranchIssues = SonarQubeProxy.GetOpenIssuesForProject(destinationProjectKey);
+                    Logger.LogInfo("Found {0} issues", subBranchIssues.Count);
                     if (subBranchIssues.Count > 0)
                     {
-                        Logger.LogInfo("Copying resolutions to parent branch");
+                        var numberOfUpdatedIssues = 0;
+
+                        Logger.LogInfo("Copying resolutions to sub-branch");
                         foreach (var parentIssue in parentIssues)
                         {
                             Logger.LogDebug("Issue {0}", parentIssue);
@@ -159,6 +168,7 @@ namespace SqCopyResolution.Services
                                     "WONTFIX",
                                     new[] { new Comment() { HtmlText = "Issue was inherited from the parent stream" } });
                                 subBranchIssues.Remove(subBranchIssue);
+                                numberOfUpdatedIssues++;
                             }
                             else if (
                                 (string.CompareOrdinal(parentIssue.Resolution, "FALSE-POSITIVE") == 0) 
@@ -167,8 +177,10 @@ namespace SqCopyResolution.Services
                                 Logger.LogDebug("Updating issue resolution to {0} in sub-branch", parentIssue.Resolution);
                                 SonarQubeProxy.UpdateIssueResolution(subBranchIssue.Key, parentIssue.Resolution, parentIssue.Comments);
                                 subBranchIssues.Remove(subBranchIssue);
+                                numberOfUpdatedIssues++;
                             }
                         }
+                        Logger.LogInfo("Updated {0} issues in sub-branch", numberOfUpdatedIssues);
                     }
                 }
             }
