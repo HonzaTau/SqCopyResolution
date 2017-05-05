@@ -28,7 +28,6 @@ namespace SqCopyResolutionr
                 "{0} v{1}",
                 Assembly.GetEntryAssembly().GetName().Name,
                 Assembly.GetEntryAssembly().GetName().Version));
-            logger.LogInfo(string.Empty);
         }
     }
 }

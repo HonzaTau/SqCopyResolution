@@ -1,55 +1,38 @@
-﻿using System;
+﻿using log4net;
 using SqCopyResolution.Model;
 
 namespace SqCopyResolution.Services
 {
     public class ConsoleLogger : ILogger
     {
+        private readonly ILog log = LogManager.GetLogger("SqCopyResolution");
+
         public ConsoleLogger()
         {
             LogLevel = LogLevel.Info;
+            log4net.Config.XmlConfigurator.Configure();
         }
 
         public LogLevel LogLevel { get; set; }
 
         public void LogDebug(string message, params object[] args)
         {
-            if (LogLevel <= LogLevel.Debug)
-            {
-                ConsoleWriteLine(ConsoleColor.DarkGray, message, args);
-            }
+            log.DebugFormat(message, args);
         }
 
         public void LogInfo(string message, params object[] args)
         {
-            if (LogLevel <= LogLevel.Info)
-            {
-                ConsoleWriteLine(ConsoleColor.Gray, message, args);
-            }
+            log.InfoFormat(message, args);
         }
 
         public void LogWarn(string message, params object[] args)
         {
-            if (LogLevel <= LogLevel.Warning)
-            {
-                ConsoleWriteLine(ConsoleColor.Yellow, message, args);
-            }
+            log.WarnFormat(message, args);
         }
 
         public void LogError(string message, params object[] args)
         {
-            if (LogLevel <= LogLevel.Error)
-            {
-                ConsoleWriteLine(ConsoleColor.Red, message, args);
-            }
-        }
-
-        private static void ConsoleWriteLine(ConsoleColor foregroundColor, string message, params object[] args)
-        {
-            var previousColor = Console.ForegroundColor;
-            Console.ForegroundColor = foregroundColor;
-            Console.WriteLine(message, args);
-            Console.ForegroundColor = previousColor;
+            log.ErrorFormat(message, args);
         }
     }
 }
