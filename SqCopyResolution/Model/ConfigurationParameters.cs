@@ -22,9 +22,6 @@ namespace SqCopyResolution.Model
         {
             Logger = logger ?? throw new ArgumentNullException("logger");
 
-            LogLevel = GetLogLevel(commandLineArguments);
-            logger.LogLevel = LogLevel;
-
             SqCopyResolutionSection appConfig = (SqCopyResolutionSection)ConfigurationManager.GetSection("sqCopyResolutionGroup/sqCopyResolution");
             string profileName = GetConfigValue(commandLineArguments, "profileName", "Default");
             ProfileElement profile = appConfig.Profiles[profileName];
@@ -34,20 +31,6 @@ namespace SqCopyResolution.Model
             SourceProjectKey = GetConfigValue(commandLineArguments, "sourceProjectKey", profile.Source.ProjectKey);
             DestinationProjectKeys = GetConfigValue(commandLineArguments, "destinationProjectKeys", profile.Destination.ProjectKeys).Split(',');
             OperationType = GetOperationType(commandLineArguments, profile);
-        }
-
-        internal static LogLevel GetLogLevel(List<string> commandLineArguments)
-        {
-            var logLevelName = GetConfigValue(commandLineArguments, "logLevel", "Info");
-            LogLevel logLevel;
-            if (Enum.TryParse<LogLevel>(logLevelName, true, out logLevel))
-            {
-                return logLevel;
-            }
-            else
-            {
-                return LogLevel.Info;
-            }
         }
 
         internal static OperationType GetOperationType(List<string> commandLineArguments, ProfileElement profile)

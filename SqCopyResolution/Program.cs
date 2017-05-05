@@ -10,7 +10,7 @@ namespace SqCopyResolutionr
     {
         static void Main(string[] args)
         {
-            var logger = new ConsoleLogger();
+            var logger = new Log4NetWrapper();
             LogApplicationHeader(logger);
 
             var configParams = new ConfigurationParameters(logger, args.ToList());
@@ -22,7 +22,7 @@ namespace SqCopyResolutionr
             }
         }
 
-        private static void LogApplicationHeader(ConsoleLogger logger)
+        private static void LogApplicationHeader(ILogger logger)
         {
             logger.LogInfo(string.Format(CultureInfo.InvariantCulture,
                 "{0} v{1}",
