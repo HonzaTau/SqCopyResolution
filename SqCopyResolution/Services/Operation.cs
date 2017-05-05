@@ -189,7 +189,11 @@ namespace SqCopyResolution.Services
         private static Issue FindIssue(List<Issue> issuesList, Issue issue)
         {
             return issuesList.Find((i) =>
-                i.Message == issue.Message
+                (
+                    (i.Message == issue.Message)
+                    || 
+                    (issue.StartLine == 0 && issue.StartOffset == 0)
+                )
                 && i.Rule == issue.Rule
                 && i.ComponentPath == issue.ComponentPath
                 && i.StartLine >= (0.9 * issue.StartLine)
