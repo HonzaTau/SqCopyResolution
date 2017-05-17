@@ -95,18 +95,18 @@ namespace SqCopyResolution.Services
             var parentIssues = SonarQubeProxy.GetOpenIssuesForProject(ConfigParameters.SourceProjectKey);
             Logger.LogInfo("Found {0} issues", parentIssues.Count);
 
-            Logger.LogInfo("Getting list of False-Positive issues in sub-branches");
+            Logger.LogInfo("\tGetting list of False-Positive issues in sub-branches");
             foreach (var destinationProjectKey in ConfigParameters.DestinationProjectKeys)
             {
                 if (parentIssues.Count > 0)
                 {
-                    Logger.LogDebug("Getting list of False-Positive issues for project {0}", destinationProjectKey);
+                    Logger.LogInfo("\t\tGetting list of False-Positive issues for project {0}", destinationProjectKey);
                     var subBranchIssues = SonarQubeProxy.GetFalsePositiveIssuesForProject(destinationProjectKey);
-                    Logger.LogInfo("Found {0} issues", subBranchIssues.Count);
+                    Logger.LogInfo("\t\tFound {0} issues", subBranchIssues.Count);
                     if (subBranchIssues.Count > 0)
                     {
                         var numberOfUpdatedIssues = 0;
-                        Logger.LogInfo("Copying False-Positive resolutions to parent branch");
+                        Logger.LogInfo("\t\t\tCopying False-Positive resolutions to parent branch");
                         foreach (var subBranchIssue in subBranchIssues)
                         {
                             Logger.LogDebug("Issue {0}", subBranchIssue);
@@ -126,7 +126,7 @@ namespace SqCopyResolution.Services
                                 numberOfUpdatedIssues++;
                             }
                         }
-                        Logger.LogInfo("Updated {0} issues in parent branch", numberOfUpdatedIssues);
+                        Logger.LogInfo("\t\t\tUpdated {0} issues in parent branch", numberOfUpdatedIssues);
                     }
                 }
             }
@@ -138,19 +138,19 @@ namespace SqCopyResolution.Services
             var parentIssues = SonarQubeProxy.GetAllIssuesForProject(ConfigParameters.SourceProjectKey);
             Logger.LogInfo("Found {0} issues", parentIssues.Count);
 
-            Logger.LogInfo("Getting list of open issues in sub-branches");
+            Logger.LogInfo("\tGetting list of open issues in sub-branches");
             foreach (var destinationProjectKey in ConfigParameters.DestinationProjectKeys)
             {
                 if (parentIssues.Count > 0)
                 {
-                    Logger.LogDebug("Getting list of open issues for project {0}", destinationProjectKey);
+                    Logger.LogInfo("\t\tGetting list of open issues for project {0}", destinationProjectKey);
                     var subBranchIssues = SonarQubeProxy.GetOpenIssuesForProject(destinationProjectKey);
-                    Logger.LogInfo("Found {0} issues", subBranchIssues.Count);
+                    Logger.LogInfo("\t\tFound {0} issues", subBranchIssues.Count);
                     if (subBranchIssues.Count > 0)
                     {
                         var numberOfUpdatedIssues = 0;
 
-                        Logger.LogInfo("Copying resolutions to sub-branch");
+                        Logger.LogInfo("\t\t\tCopying resolutions to sub-branch");
                         foreach (var parentIssue in parentIssues)
                         {
                             Logger.LogDebug("Issue {0}", parentIssue);
@@ -180,7 +180,7 @@ namespace SqCopyResolution.Services
                                 numberOfUpdatedIssues++;
                             }
                         }
-                        Logger.LogInfo("Updated {0} issues in sub-branch", numberOfUpdatedIssues);
+                        Logger.LogInfo("\t\t\tUpdated {0} issues in sub-branch", numberOfUpdatedIssues);
                     }
                 }
             }
