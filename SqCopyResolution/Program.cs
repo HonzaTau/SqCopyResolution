@@ -31,7 +31,7 @@ namespace SqCopyResolutionr
             var sqProxy = new SonarQubeProxy(logger, configParams.SonarQubeUrl, configParams.UserName, configParams.Password);
 
             logger.LogInfo("Getting list of issues for project {0}", configParams.SourceProjectKey);
-            var sourceIssues = sqProxy.GetIssuesForProject(configParams.SourceProjectKey, true);
+            var sourceIssues = sqProxy.GetIssuesForProject(configParams.SourceProjectKey, configParams.SourceBranch, true);
 
             if (sourceIssues.Count > 0)
             {
@@ -39,7 +39,7 @@ namespace SqCopyResolutionr
                 {
                     logger.LogInfo("Copying resolutions to project {0}", destinationProjectKey);
 
-                    var destinationIssues = sqProxy.GetIssuesForProject(destinationProjectKey, false);
+                    var destinationIssues = sqProxy.GetIssuesForProject(destinationProjectKey, configParams.DestinationBranch, false);
                     foreach (var sourceIssue in sourceIssues)
                     {
                         if ((string.CompareOrdinal(sourceIssue.Resolution, "FALSE-POSITIVE") != 0) || (string.CompareOrdinal(sourceIssue.Resolution, "WONTFIX") != 0))

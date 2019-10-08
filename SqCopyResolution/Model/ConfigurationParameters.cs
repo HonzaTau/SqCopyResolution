@@ -11,8 +11,10 @@ namespace SqCopyResolution.Model
         public string UserName { get; set; }
         public string Password { get; set; }
         public string SourceProjectKey { get; set; }
+        public string SourceBranch { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "This is just for passing list of destination project keys to the applicaton.")]
         public string[] DestinationProjectKeys { get; set; }
+        public string DestinationBranch { get; set; }
         public LogLevel LogLevel { get; set; }
         public bool DryRun { get; set; }
 
@@ -24,7 +26,9 @@ namespace SqCopyResolution.Model
             UserName = ConfigurationManager.AppSettings["SQ_UserName"];
             Password = ConfigurationManager.AppSettings["SQ_Password"];
             SourceProjectKey = ConfigurationManager.AppSettings["SQ_SourceProjectKey"];
+            SourceBranch = ConfigurationManager.AppSettings["SQ_SourceBranch"];
             DestinationProjectKeys = ConfigurationManager.AppSettings["SQ_DestinationProjectKeys"].Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
+            DestinationBranch = ConfigurationManager.AppSettings["SQ_DestinationBranch"];
             LogLevel logLevel;
             if (Enum.TryParse<LogLevel>(ConfigurationManager.AppSettings["SQ_LogLevel"], true, out logLevel))
             {
@@ -58,8 +62,16 @@ namespace SqCopyResolution.Model
                             SourceProjectKey = commandLineArguments[argsIndex + 1].Trim();
                             argsIndex += 2;
                             break;
+                        case "-SOURCEBRANCH":
+                            SourceBranch = commandLineArguments[argsIndex + 1].Trim();
+                            argsIndex += 2;
+                            break;
                         case "-DESTINATIONPROJECTKEYS":
                             DestinationProjectKeys = commandLineArguments[argsIndex + 1].Trim().Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
+                            argsIndex += 2;
+                            break;
+                        case "-DESTINATIONBRANCH":
+                            DestinationBranch = commandLineArguments[argsIndex + 1].Trim();
                             argsIndex += 2;
                             break;
                         case "-LOGLEVEL":
