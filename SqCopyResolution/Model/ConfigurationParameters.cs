@@ -23,7 +23,7 @@ namespace SqCopyResolution.Model
             UserName = ConfigurationManager.AppSettings["SQ_UserName"];
             Password = ConfigurationManager.AppSettings["SQ_Password"];
             SourceProjectKey = ConfigurationManager.AppSettings["SQ_SourceProjectKey"];
-            DestinationProjectKeys = ConfigurationManager.AppSettings["SQ_DestinationProjectKeys"].Split(',');
+            DestinationProjectKeys = ConfigurationManager.AppSettings["SQ_DestinationProjectKeys"].Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
             LogLevel logLevel;
             if (Enum.TryParse<LogLevel>(ConfigurationManager.AppSettings["SQ_LogLevel"], true, out logLevel))
             {
@@ -58,7 +58,7 @@ namespace SqCopyResolution.Model
                             argsIndex += 2;
                             break;
                         case "-DESTINATIONPROJECTKEYS":
-                            DestinationProjectKeys = commandLineArguments[argsIndex + 1].Trim().Split(',');
+                            DestinationProjectKeys = commandLineArguments[argsIndex + 1].Trim().Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
                             argsIndex += 2;
                             break;
                         case "-LOGLEVEL":
