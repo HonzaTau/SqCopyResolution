@@ -66,7 +66,10 @@ namespace SqCopyResolutionr
                             {
                                 logger.LogInfo("\tUpdating issue resolution to {0}",
                                     sourceIssue.Resolution);
-                                sqProxy.UpdateIssueResolution(destinationIssue.Key, sourceIssue.Resolution, sourceIssue.Comments);
+                                if (!configParams.DryRun)
+                                {
+                                    sqProxy.UpdateIssueResolution(destinationIssue.Key, sourceIssue.Resolution, sourceIssue.Comments);
+                                }
                             }
                         }
                     }
