@@ -35,6 +35,18 @@ namespace SqCopyResolutionr
 
             if (sourceIssues.Count > 0)
             {
+                string noteToAdd;
+                if (configParams.AddNote)
+                {
+                    noteToAdd = string.IsNullOrEmpty(configParams.SourceBranch)
+                        ? string.Format(CultureInfo.InvariantCulture, "(copy from {0})", configParams.SourceProjectKey)
+                        : string.Format(CultureInfo.InvariantCulture, "(copy from {0}, branch {1})", configParams.SourceProjectKey, configParams.SourceBranch);
+                    logger.LogDebug("Will be adding a note '{0}'", noteToAdd);
+                }
+                else
+                {
+                    noteToAdd = null;
+                }
                 foreach (var destinationProjectKey in configParams.DestinationProjectKeys)
                 {
                     logger.LogInfo("Copying resolutions to project {0}", destinationProjectKey);
@@ -68,7 +80,7 @@ namespace SqCopyResolutionr
                                     sourceIssue.Resolution);
                                 if (!configParams.DryRun)
                                 {
-                                    sqProxy.UpdateIssueResolution(destinationIssue.Key, sourceIssue.Resolution, sourceIssue.Comments);
+                                    sqProxy.UpdateIssueResolution(destinationIssue.Key, sourceIssue.Resolution, sourceIssue.Comments, noteToAdd);
                                 }
                             }
                         }
