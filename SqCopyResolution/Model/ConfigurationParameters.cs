@@ -14,6 +14,7 @@ namespace SqCopyResolution.Model
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays", Justification = "This is just for passing list of destination project keys to the applicaton.")]
         public string[] DestinationProjectKeys { get; set; }
         public LogLevel LogLevel { get; set; }
+        public bool DryRun { get; set; }
 
         public ConfigurationParameters(ILogger logger, string[] commandLineArguments)
         {
@@ -71,6 +72,10 @@ namespace SqCopyResolution.Model
                                 Console.WriteLine("Unknown log level: {0}", commandLineArguments[argsIndex + 1]);
                             }
                             argsIndex += 2;
+                            break;
+                        case "-DRYRUN":
+                            DryRun = true;
+                            argsIndex++;
                             break;
                         default:
                             Console.WriteLine("Unknown argument: {0}", commandLineArguments[argsIndex]);
