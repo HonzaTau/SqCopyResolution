@@ -16,6 +16,7 @@ namespace SqCopyResolution.Model
         public string[] DestinationProjectKeys { get; set; }
         public string DestinationBranch { get; set; }
         public LogLevel LogLevel { get; set; }
+        public bool AddNote { get; set; }
         public bool DryRun { get; set; }
 
         public ConfigurationParameters(ILogger logger, string[] commandLineArguments)
@@ -29,6 +30,10 @@ namespace SqCopyResolution.Model
             SourceBranch = ConfigurationManager.AppSettings["SQ_SourceBranch"];
             DestinationProjectKeys = ConfigurationManager.AppSettings["SQ_DestinationProjectKeys"].Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
             DestinationBranch = ConfigurationManager.AppSettings["SQ_DestinationBranch"];
+            if (string.Equals(ConfigurationManager.AppSettings["SQ_AddNote"], "true", StringComparison.OrdinalIgnoreCase))
+            {
+                AddNote = true;
+            }
             LogLevel logLevel;
             if (Enum.TryParse<LogLevel>(ConfigurationManager.AppSettings["SQ_LogLevel"], true, out logLevel))
             {
@@ -84,6 +89,10 @@ namespace SqCopyResolution.Model
                                 Console.WriteLine("Unknown log level: {0}", commandLineArguments[argsIndex + 1]);
                             }
                             argsIndex += 2;
+                            break;
+                        case "-ADDNOTE":
+                            AddNote = true;
+                            argsIndex++;
                             break;
                         case "-DRYRUN":
                             DryRun = true;
