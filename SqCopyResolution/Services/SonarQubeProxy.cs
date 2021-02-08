@@ -206,12 +206,12 @@ namespace SqCopyResolution.Services
             do
             {
                 var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                "{0}/api/components/tree?baseComponentKey={1}&qualifiers=DIR&p={2}&ps={3}{4}",
-                SonarQubeUrl,
-                projectKey,
-                pageIndex,
-                pageSize,
-                !string.IsNullOrEmpty(branchName) ? "&branch=" + branchName : string.Empty));
+                    "{0}/api/components/tree?baseComponentKey={1}&component={1}&qualifiers=DIR&p={2}&ps={3}{4}",
+                    SonarQubeUrl,
+                    projectKey,
+                    pageIndex,
+                    pageSize,
+                    !string.IsNullOrEmpty(branchName) ? "&branch=" + branchName : string.Empty));
 
                 var responseContent = GetFromServer(uri);
                 if (!string.IsNullOrEmpty(responseContent))
