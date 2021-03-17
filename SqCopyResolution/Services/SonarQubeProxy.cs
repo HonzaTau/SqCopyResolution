@@ -44,7 +44,7 @@ namespace SqCopyResolution.Services
                     do
                     {
                         var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                            "{0}/api/issues/search?projectKeys={1}&additionalFields=comments&p={2}&ps={3}{4}{5}",
+                            "{0}/api/issues/search?projectKeys={1}&componentKeys={1}&additionalFields=comments&p={2}&ps={3}{4}{5}",
                             SonarQubeUrl,
                             projectKey,
                             pageIndex,
@@ -94,7 +94,7 @@ namespace SqCopyResolution.Services
             Logger.LogDebug("Getting number of issues for project {0} (branch {1})", projectKey, branchName);
 
             var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                "{0}/api/issues/search?projectKeys={1}&p=1&ps=1{2}{3}",
+                "{0}/api/issues/search?projectKeys={1}&componentKeys={1}&p=1&ps=1{2}{3}",
                 SonarQubeUrl,
                 projectKey,
                 onlyFalsePositivesAndWontFixes ? "&resolutions=FALSE-POSITIVE,WONTFIX" : string.Empty,
