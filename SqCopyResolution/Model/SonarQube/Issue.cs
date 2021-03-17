@@ -18,7 +18,7 @@ namespace SqCopyResolution.Model.SonarQube
         {
             get
             {
-                return Component.Substring(Project.Length + 1);
+                return Component == Project ? "<project>" : Component.Substring(Project.Length + 1);
             }
         }
 
