@@ -91,7 +91,7 @@ namespace SqCopyResolution.Services
 
         private int GetNumberOfIssuesForProject(string projectKey, string branchName, bool onlyFalsePositivesAndWontFixes)
         {
-            Logger.LogDebug("Getting number of issues for project {0} (branch {1})", projectKey, branchName);
+            Logger.LogDebug("Getting number of issues for project {0} (branch '{1}')", projectKey, branchName);
 
             var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
                 "{0}/api/issues/search?projectKeys={1}&componentKeys={1}&p=1&ps=1{2}{3}",
@@ -152,7 +152,7 @@ namespace SqCopyResolution.Services
             return result;
         }
 
-        public void UpdateIssueResolution(string issueKey, string newResolution, Comment[] comments)
+        public void UpdateIssueResolution(string issueKey, string newResolution, Comment[] comments, string noteToAdd)
         {
             if (newResolution == null) { throw new ArgumentNullException("newResolution"); }
 
@@ -184,15 +184,25 @@ namespace SqCopyResolution.Services
             {
                 foreach (var comment in comments)
                 {
-                    uri = new Uri(string.Format(CultureInfo.InvariantCulture,
-                        "{0}/api/issues/add_comment",
-                        SonarQubeUrl));
-                    PostToServer(uri, new[] {
-                        new KeyValuePair<string, string>("issue", issueKey),
-                        new KeyValuePair<string, string>("text", comment.HtmlText)
-                    });
+                    PostComment(issueKey, noteToAdd == null ? comment.HtmlText : comment.HtmlText + " " + noteToAdd);
                 }
             }
+            if (comments == null && noteToAdd != null)
+            {
+                PostComment(issueKey, noteToAdd);
+            }
+        }
+
+        private void PostComment(string issueKey, string commentHtmlText)
+        {
+            var uri = new Uri(string.Format(CultureInfo.InvariantCulture,
+                "{0}/api/issues/add_comment",
+                SonarQubeUrl));
+            PostToServer(uri, new[]
+            {
+                new KeyValuePair<string, string>("issue", issueKey),
+                new KeyValuePair<string, string>("text", commentHtmlText)
+            });
         }
 
         private IList<Component> GetProjectComponents(string projectKey, string branchName)
